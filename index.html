@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Companion</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #0d1117;
+            color: #ffffff;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #161b22;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar h1 {
+            font-size: 1.8rem;
+            color: #58a6ff;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .sidebar .menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar .menu li {
+            margin-bottom: 20px;
+        }
+
+        .sidebar .menu a {
+            text-decoration: none;
+            color: #c9d1d9;
+            font-size: 1.2rem;
+            background-color: #21262d;
+            padding: 12px 18px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .menu a i {
+            font-size: 1.2rem;
+            color: #58a6ff;
+        }
+
+        .sidebar .menu a:hover {
+            background-color: #58a6ff;
+            color: #0d1117;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .main-content .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background-color: #21262d;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .card h2 {
+            color: #58a6ff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #c9d1d9;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+/* Chatbot UI */
+.chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+.chatbot-icon {
+    background-color: #58a6ff;
+    color: #0d1117;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    background-color: #161b22;
+    border-radius: 10px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+}
+
+/* Chatbot */
+.chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000; /* Ensure it stays on top */
+}
+
+.chatbot-icon {
+    background-color: #58a6ff;
+    color: #0d1117;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    z-index: 10001; /* Ensure the icon is on top */
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 300px;
+    max-height: 400px;
+    background-color: #161b22;
+    border-radius: 10px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    z-index: 10001; /* Ensure it stays on top */
+}
+
+
+.chat-header {
+    background-color: #21262d;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.chat-header h3 {
+    color: #58a6ff;
+    margin: 0;
+}
+
+.chat-body {
+    padding: 10px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-body .bot-message, .chat-body .user-message {
+    background-color: #21262d;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.chat-body .bot-message {
+    align-self: flex-start;
+    color: #c9d1d9;
+}
+
+.chat-body .user-message {
+    align-self: flex-end;
+    background-color: #58a6ff;
+    color: #0d1117;
+}
+
+.chat-footer {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid #21262d;
+}
+
+.chat-footer input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    background-color: #21262d;
+    color: #c9d1d9;
+}
+
+.chat-footer button {
+    background-color: #58a6ff;
+    color: #0d1117;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+
+        .card .button {
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            color: #0d1117;
+            background-color: #58a6ff;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .card .button:hover {
+            background-color: #357abd;
+        }
+
+        .card.full-width {
+            grid-column: span 2;
+            text-align: center;
+        }
+
+        /* Hamburger Menu for Small Screens */
+        .hamburger {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                height: 100%;
+                z-index: 1000;
+                transform: translateX(-250px);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .hamburger {
+                display: block;
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                background-color: #58a6ff;
+                width: 40px;
+                height: 40px;
+                cursor: pointer;
+                border-radius: 5px;
+                z-index: 1100;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            }
+
+            .hamburger span {
+                display: block;
+                background-color: #0d1117;
+                height: 3px;
+                width: 25px;
+                margin: 7px auto;
+                transition: all 0.3s ease;
+            }
+
+            .card.full-width {
+                grid-column: span 1;
+            }
+        }
+
+        /* Animations */
+        .card {
+            animation: fadeInUp 0.8s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sidebar .menu a {
+            animation: slideIn 0.5s ease both;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Mood Tracking Styles */
+        .mood-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: #161b22;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .mood-bar span {
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .mood-bar span:hover {
+            transform: scale(1.2);
+        }
+
+        .mood-bar span.selected {
+            transform: scale(1.4);
+            color: #58a6ff;
+        }
+
+/* Journaling Section */
+.journal {
+    background-color: #161b22;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+}
+
+.journal h2 {
+    color: #58a6ff;
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.journal p {
+    color: #c9d1d9;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.journal-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.journal-buttons button {
+    background-color: #21262d;
+    color: #c9d1d9;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.journal-buttons button:hover {
+    background-color: #58a6ff;
+    color: #0d1117;
+    transform: scale(1.05);
+}
+
+.journal-notes {
+    background-color: #21262d;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.journal-notes h3 {
+    color: #c9d1d9;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.journal-notes textarea {
+    width: 100%;
+    height: 200px;
+    border: none;
+    border-radius: 10px;
+    background-color: #161b22;
+    color: #c9d1d9;
+    padding: 10px;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.journal-notes button {
+    display: block;
+    margin: 10px auto 0;
+    background-color: #58a6ff;
+    color: #0d1117;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.journal-notes button:hover {
+    background-color: #357abd;
+    transform: scale(1.05);
+}
+
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="hamburger" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sidebar">
+        <h1>AI Health Companion</h1>
+        <ul class="menu">
+            <li><a href="#home" onclick="showHome()"><i class="fas fa-home"></i> Home</a></li>
+            <li><a href="#mood-tracking" onclick="showMoodBar()"><i class="fas fa-smile"></i> Mood Tracking</a></li>
+        </ul>
+<li><a href="#journal" onclick="showJournal()"><i class="fas fa-book"></i> Mental Journaling</a></li>
+
+
+    </div>
+
+<div class="chatbot">
+    <button class="chatbot-icon" onclick="toggleChat()">💬</button>
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <h3>AI Chatbot</h3>
+            <button class="close-btn" onclick="toggleChat()">✖</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="bot-message">Hello! I'm here to help. What's on your mind?</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type your message..." onkeydown="handleChatInput(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+
+    <div class="main-content" id="main-content">
+        <div class="cards" id="home-content">
+            <div class="card">
+                <h2>Steps</h2>
+                <p>Track yourd haily steps and achieve your goals.</p>
+            </div>
+            <div class="card">
+                <h2>Calories Burnt</h2>
+                <p>Monitor your calorie expenditure throughout the day.</p>
+            </div>
+            <div class="card">
+                <h2>Sleep</h2>
+                <p>Improve your sleep patterns with tailored suggestions.</p>
+            </div>
+            <div class="card">
+                <h2>Hydration</h2>
+                <p>Stay hydrated and keep track of your water intake.</p>
+            </div>
+            <div class="card full-width">
+                <h2>Motivational Quote</h2>
+                <p>"The journey of a thousand miles begins with a single step." - Lao Tzu</p>
+
+<div class="journal" id="journal-section" style="display: none;">
+    <h2>Mental Journaling</h2>
+    <p>Track your thoughts and emotions with daily notes.</p>
+    <div class="journal-buttons" id="journal-buttons"></div>
+    <div class="journal-notes" id="journal-notes">
+        <h3 id="journal-date">Select a date to view or add notes</h3>
+        <textarea id="journal-textarea" placeholder="Start writing your notes here..."></textarea>
+        <button onclick="saveJournal()">Save Notes</button>
+    </div>
+</div>
+
+
+
+            </div>
+        </div>
+
+        <div class="mood-bar" id="mood-bar" style="display: none;">
+            <span onclick="selectMood(this)">&#128577;</span>
+            <span onclick="selectMood(this)">&#128532;</span>
+            <span onclick="selectMood(this)">&#128528;</span>
+            <span onclick="selectMood(this)">&#128522;</span>
+            <span onclick="selectMood(this)">&#128515;</span>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        function showHome() {
+            document.getElementById('home-content').style.display = 'grid';
+            document.getElementById('mood-bar').style.display = 'none';
+        }
+
+        function showMoodBar() {
+            document.getElementById('home-content').style.display = 'none';
+            document.getElementById('mood-bar').style.display = 'flex';
+        }
+
+        function selectMood(element) {
+            document.querySelectorAll('.mood-bar span').forEach(span => {
+                span.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+function toggleChat() {
+    const chatWindow = document.getElementById('chat-window');
+    chatWindow.style.display = chatWindow.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function handleChatInput(event) {
+    if (event.key === 'Enter') {
+        sendMessage();
+    }
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (message) {
+        displayMessage(message, 'user-message');
+        getBotResponse(message);
+        input.value = '';
+    }
+}
+
+function displayMessage(text, className) {
+    const chatBody = document.getElementById('chat-body');
+    const messageElement = document.createElement('div');
+    messageElement.className = className;
+    messageElement.innerText = text;
+    chatBody.appendChild(messageElement);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+async function getBotResponse(userMessage) {
+    const apiUrl = 'https://api.worqhat.com/your-endpoint'; // Replace with the correct endpoint
+    const apiKey = 'your-api-key'; // Replace with your API key
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({ message: userMessage }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            displayMessage(data.reply || 'Sorry, I did not understand that.', 'bot-message');
+        } else {
+            displayMessage('Error: Unable to fetch response.', 'bot-message');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        displayMessage('An error occurred. Please try again.', 'bot-message');
+    }
+}
+
+const journalData = {};
+
+function showJournal() {
+    document.getElementById('home-content').style.display = 'none';
+    document.getElementById('mood-bar').style.display = 'none';
+    document.getElementById('journal-section').style.display = 'block';
+    renderJournalButtons();
+}
+
+function renderJournalButtons() {
+    const journalButtons = document.getElementById('journal-buttons');
+    journalButtons.innerHTML = '';
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        const dateString = date.toISOString().split('T')[0];
+        const button = document.createElement('button');
+        button.innerText = dateString;
+        button.onclick = () => openJournal(dateString);
+        journalButtons.appendChild(button);
+    }
+}
+
+function openJournal(date) {
+    const journalDate = document.getElementById('journal-date');
+    const journalTextarea = document.getElementById('journal-textarea');
+    journalDate.innerText = `Notes for ${date}`;
+    journalTextarea.value = journalData[date] || '';
+}
+
+function saveJournal() {
+    const journalDate = document.getElementById('journal-date').innerText.replace('Notes for ', '');
+    const journalTextarea = document.getElementById('journal-textarea').value.trim();
+    if (journalDate) {
+        journalData[journalDate] = journalTextarea;
+        alert('Notes saved successfully!');
+    }
+}
+
+
+    </script>
+</body>
+</html>
